@@ -2,17 +2,27 @@
 /**
  * Poradnik ogrodnika: kalendarz prac (zakładki z miesiącami, domyślnie
  * bieżący miesiąc) + porady z plików Markdown (src/content/tips).
+ * Motyw sekcji (tło, kolory, dekoracje) zmienia się z porą roku
+ * wybranego miesiąca – patrz SeasonBackdrop.astro i zmienne --s-* niżej.
  */
 import { Picture } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
-import { calendar } from '../../data/calendar';
+import { calendar, seasonInfo, seasonOfMonth } from '../../data/calendar';
+import SeasonBackdrop from '../SeasonBackdrop.astro';
+import MonthIcon from '../MonthIcon.astro';
 
 const buildMonth = new Date().getMonth();
 const tips = (await getCollection('tips')).sort((a, b) => a.data.order - b.data.order);
 const rendered = await Promise.all(tips.map(async (t) => ({ tip: t, Content: (await render(t)).Content })));
 ---
 
-<section id="poradnik" class="section" aria-labelledby="poradnik-title">
+<section
+  id="poradnik"
+  class="section relative isolate overflow-hidden"
+  aria-labelledby="poradnik-title"
+  data-season={seasonOfMonth(buildMonth)}
+>
+  <SeasonBackdrop />
   <div class="container-page">
     <div class="max-w-2xl" data-reveal>
       <span class="eyebrow">Poradnik ogrodnika</span>
@@ -22,7 +32,7 @@ const rendered = await Promise.all(tips.map(async (t) => ({ tip: t, Content: (aw
 
     <!-- ─────────── Kalendarz prac ─────────── -->
     <div class="card mt-10 overflow-hidden" data-reveal>
-      <div class="border-b border-sage-light bg-cream/60 p-3 sm:p-4">
+      <div class="border-b border-sage-light bg-(--s-tint) p-3 transition-colors duration-500 sm:p-4">
         <div
           role="tablist"
           aria-label="Miesiąc"
@@ -39,7 +49,8 @@ const rendered = await Promise.all(tips.map(async (t) => ({ tip: t, Content: (aw
                 aria-selected={i === buildMonth ? 'true' : 'false'}
                 tabindex={i === buildMonth ? 0 : -1}
                 data-month={i}
-                class="relative shrink-0 snap-start rounded-xl px-3.5 py-2 text-sm font-semibold text-muted transition hover:bg-mint hover:text-forest aria-selected:bg-olive-700 aria-selected:text-white"
+                data-season={seasonOfMonth(i)}
+                class="relative shrink-0 snap-start rounded-xl px-3.5 py-2 text-sm font-semibold text-muted transition hover:bg-white/70 hover:text-forest aria-selected:bg-(--s-accent) aria-selected:text-white aria-selected:shadow-soft"
               >
                 {/* Na szerokim ekranie (12 kolumn) skrót „Sty”, pełna nazwa dla czytników */}
                 <span aria-hidden="true" class="hidden lg:inline">{m.name.slice(0, 3)}</span>
@@ -59,22 +70,31 @@ const rendered = await Promise.all(tips.map(async (t) => ({ tip: t, Content: (aw
             aria-labelledby={`month-tab-${i}`}
             tabindex="0"
             hidden={i !== buildMonth}
-            class="grid gap-6 p-6 sm:p-8 md:grid-cols-[14rem_1fr]"
+            class="relative grid gap-6 overflow-hidden p-6 sm:p-8 md:grid-cols-[14rem_1fr]"
           >
-            <div>
-              <h3 class="text-3xl font-semibold">{m.name}</h3>
+            {/* Duża, blada ikona miesiąca w rogu – czysta dekoracja */}
+            <MonthIcon name={m.icon} class="pointer-events-none absolute -right-6 -bottom-8 size-48 text-(--s-accent) opacity-[0.07]" />
+            <div class="relative">
+              <div class="flex items-center gap-3">
+                <span class="flex size-14 items-center justify-center rounded-2xl bg-(--s-tint) text-(--s-accent)">
+                  <MonthIcon name={m.icon} class="size-8" />
+                </span>
+                <span class="rounded-full border border-(--s-accent)/30 px-3 py-1 text-xs font-semibold tracking-wider text-(--s-accent) uppercase">
+                  {seasonInfo[seasonOfMonth(i)].label}
+                </span>
+              </div>
+              <h3 class="mt-4 text-3xl font-semibold">{m.name}</h3>
               <p class="mt-2 text-muted">{m.intro}</p>
               <p data-now-label hidden class="mt-4 inline-flex rounded-full bg-blush px-3 py-1 text-xs font-semibold text-forest">
                 Bieżący miesiąc
               </p>
             </div>
-            <ul class="grid gap-3 sm:grid-cols-2">
+            <ul class="relative grid gap-3 sm:grid-cols-2">
               {m.tasks.map((task) => (
-                <li class="flex gap-3 rounded-xl bg-cream/70 p-4">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" class="mt-0.5 size-5 shrink-0 text-olive" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M12 21v-9" />
-                    <path d="M12 12c0-4-3-6-7-6 0 4 3 6 7 6Z" />
-                    <path d="M12 10c0-3.5 2.5-6 7-6 0 4-3 6-7 6Z" />
+                <li class="flex gap-3 rounded-xl bg-(--s-tint)/70 p-4">
+                  {/* Punktor w motywie pory roku: płatek śniegu / kwiat / słońce / liść */}
+                  <svg aria-hidden="true" class="mt-0.5 size-5 shrink-0 text-(--s-accent)">
+                    <use href={`#deco-${seasonOfMonth(i)}`} />
                   </svg>
                   <span>{task}</span>
                 </li>
@@ -123,6 +143,33 @@ const rendered = await Promise.all(tips.map(async (t) => ({ tip: t, Content: (aw
 
 <style>
   @reference '../../styles/global.css';
+  /* Kolory motywu pory roku (kontrast WCAG AA sprawdzony: akcent ≥ 6:1 na białym, ≥ 5.4:1 na tle) */
+  #poradnik {
+    --s-accent: #55663d;
+    --s-tint: #eef5e6;
+  }
+  #poradnik[data-season='winter'] {
+    --s-accent: #46657a;
+    --s-tint: #eaf1f5;
+  }
+  #poradnik[data-season='spring'] {
+    --s-accent: #55663d;
+    --s-tint: #eef5e6;
+  }
+  #poradnik[data-season='summer'] {
+    --s-accent: #7d5a12;
+    --s-tint: #fbf3dc;
+  }
+  #poradnik[data-season='autumn'] {
+    --s-accent: #93441f;
+    --s-tint: #f8eadf;
+  }
+  /* Eyebrow w kolorze pory roku */
+  #poradnik .eyebrow {
+    background: rgb(255 255 255 / 0.8);
+    color: var(--s-accent);
+    transition: background-color 0.5s, color 0.5s;
+  }
   /* Minimalne style dla treści Markdown (bez wtyczki typography) */
   .prose-tip :global(h3) {
     @apply mt-6 mb-2 font-sans text-base font-bold text-forest first:mt-0;
@@ -158,7 +205,12 @@ const rendered = await Promise.all(tips.map(async (t) => ({ tip: t, Content: (aw
     const center = (tab: HTMLElement) => {
       tablist.scrollLeft = tab.offsetLeft - tablist.clientWidth / 2 + tab.clientWidth / 2;
     };
-    const { select, tabs } = initTabs(tablist, center);
+    // Zmiana miesiąca = zmiana motywu sekcji (zima / wiosna / lato / jesień)
+    const section = document.getElementById('poradnik')!;
+    const { select, tabs } = initTabs(tablist, (tab) => {
+      center(tab);
+      section.dataset.season = tab.dataset.season;
+    });
     const now = new Date().getMonth();
     const current = tabs[now];
     if (current) {

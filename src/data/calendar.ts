@@ -4,8 +4,32 @@
  * lata przesuwają się o 1–2 tygodnie. Edytuj swobodnie – sekcja „Poradnik”
  * renderuje się z tej tablicy.
  */
+/** Pora roku – steruje motywem graficznym sekcji (tło, kolory, dekoracje). */
+export type SeasonId = 'winter' | 'spring' | 'summer' | 'autumn';
+
+export const seasonInfo: Record<SeasonId, { label: string }> = {
+  winter: { label: 'Zima' },
+  spring: { label: 'Wiosna' },
+  summer: { label: 'Lato' },
+  autumn: { label: 'Jesień' },
+};
+
+/** Miesiąc (0 = styczeń) → pora roku: XII–II zima, III–V wiosna, VI–VIII lato, IX–XI jesień. */
+export function seasonOfMonth(month: number): SeasonId {
+  if (month === 11 || month <= 1) return 'winter';
+  if (month <= 4) return 'spring';
+  if (month <= 7) return 'summer';
+  return 'autumn';
+}
+
+/** Ikona miesiąca – klucze zdefiniowane w src/components/MonthIcon.astro. */
+export type MonthIconId =
+  | 'snowman' | 'shears' | 'sprout' | 'tulip' | 'blossom' | 'strawberry'
+  | 'sun' | 'watering-can' | 'apple' | 'leaf' | 'rake' | 'tree';
+
 export interface MonthPlan {
   name: string;
+  icon: MonthIconId;
   /** Jedno zdanie – „motto” miesiąca. */
   intro: string;
   tasks: string[];
@@ -14,6 +38,7 @@ export interface MonthPlan {
 export const calendar: MonthPlan[] = [
   {
     name: 'Styczeń',
+    icon: 'snowman',
     intro: 'Czas odpoczynku ogrodu – i planowania nowego sezonu.',
     tasks: [
       'Strząsaj mokry śnieg z iglaków i żywopłotów, żeby nie łamał gałęzi.',
@@ -25,6 +50,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Luty',
+    icon: 'shears',
     intro: 'Dni są dłuższe – pora na pierwsze cięcia i rozsady.',
     tasks: [
       'W bezmroźne dni tnij jabłonie i grusze (cięcie zimowe).',
@@ -36,6 +62,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Marzec',
+    icon: 'sprout',
     intro: 'Ogród się budzi – zaczynamy porządki.',
     tasks: [
       'Stopniowo zdejmuj osłony zimowe – najlepiej w pochmurny dzień.',
@@ -48,6 +75,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Kwiecień',
+    icon: 'tulip',
     intro: 'Najlepszy moment na sadzenie i zakładanie trawnika.',
     tasks: [
       'Zakładaj trawnik z siewu, gdy gleba ogrzeje się do ok. 8–10°C.',
@@ -60,6 +88,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Maj',
+    icon: 'blossom',
     intro: 'Po „zimnych ogrodnikach” ogród rusza pełną parą.',
     tasks: [
       'Po 15 maja sadź rośliny balkonowe i rozsady pomidorów, ogórków, cukinii.',
@@ -72,6 +101,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Czerwiec',
+    icon: 'strawberry',
     intro: 'Pielęgnacja, podlewanie i pierwsze zbiory.',
     tasks: [
       'Pod koniec miesiąca (po św. Janie) przytnij żywopłoty.',
@@ -84,6 +114,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Lipiec',
+    icon: 'sun',
     intro: 'Upały – pamiętaj o wodzie i ściółce.',
     tasks: [
       'W upały koś trawnik wyżej (5–6 cm) i nie nawoź w pełnym słońcu.',
@@ -95,6 +126,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Sierpień',
+    icon: 'watering-can',
     intro: 'Drugi najlepszy termin na trawnik i iglaki.',
     tasks: [
       'Druga połowa sierpnia to świetny czas na założenie trawnika z siewu.',
@@ -106,6 +138,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Wrzesień',
+    icon: 'apple',
     intro: 'Jesienne sadzenie – rośliny przyjmą się najlepiej.',
     tasks: [
       'Sadź cebule kwiatów wiosennych: tulipany, narcyzy, krokusy, hiacynty.',
@@ -117,6 +150,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Październik',
+    icon: 'leaf',
     intro: 'Przygotowujemy ogród do zimy.',
     tasks: [
       'Sadź drzewa owocowe i krzewy z gołym korzeniem.',
@@ -129,6 +163,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Listopad',
+    icon: 'rake',
     intro: 'Zabezpieczamy rośliny i robimy porządki.',
     tasks: [
       'Usyp kopczyki przy różach, wrażliwe rośliny okryj agrowłókniną.',
@@ -141,6 +176,7 @@ export const calendar: MonthPlan[] = [
   },
   {
     name: 'Grudzień',
+    icon: 'tree',
     intro: 'Choinka, ozdoby i odpoczynek.',
     tasks: [
       'Wybierz żywą choinkę – w doniczce posadzisz ją wiosną w ogrodzie.',
