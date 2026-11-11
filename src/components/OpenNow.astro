@@ -1,0 +1,46 @@
+---
+/**
+ * Badge „Otwarte teraz / Zamknięte”. Wynik zależy od chwili odwiedzin,
+ * więc liczymy go w przeglądarce (strefa Europe/Warsaw). Przy buildzie
+ * renderujemy neutralny tekst, który nie zmienia rozmiaru (brak CLS).
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<p
+  data-open-now
+  data-state="unknown"
+  class:list={[
+    'group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-medium text-forest shadow-soft',
+    className,
+  ]}
+  aria-live="polite"
+>
+  <span class="relative flex size-2.5" aria-hidden="true">
+    <span
+      class="absolute inline-flex size-full rounded-full bg-emerald-500 opacity-60 group-data-[state=open]:animate-ping motion-reduce:!animate-none"
+    ></span>
+    <span
+      class="relative inline-flex size-2.5 rounded-full bg-sage group-data-[state=closed]:bg-rose-500 group-data-[state=open]:bg-emerald-600"
+    ></span>
+  </span>
+  <span data-label>Sprawdź godziny otwarcia</span>
+</p>
+
+<script>
+  import { openStatus } from '../lib/hours';
+
+  function update() {
+    const status = openStatus();
+    document.querySelectorAll<HTMLElement>('[data-open-now]').forEach((el) => {
+      el.dataset.state = status.open ? 'open' : 'closed';
+      el.querySelector('[data-label]')!.textContent = status.label;
+    });
+  }
+  update();
+  // Odświeżamy co minutę, gdyby ktoś zostawił otwartą kartę
+  setInterval(update, 60_000);
+</script>

@@ -1,0 +1,67 @@
+---
+/** Oferta: kategorie w zaokrąglonych kartach + baner współpracy z firmami. */
+import { Picture } from 'astro:assets';
+import { offer } from '../../data/offer';
+import { business } from '../../lib/business';
+---
+
+<section id="oferta" class="section" aria-labelledby="oferta-title">
+  <div class="container-page">
+    <div class="max-w-2xl" data-reveal>
+      <span class="eyebrow">Oferta</span>
+      <h2 id="oferta-title" class="section-title">Co znajdziesz w naszym centrum</h2>
+      <p class="section-lead">
+        Od sadzonki po gotowy ogród. Asortyment zmienia się z sezonem – zadzwoń, a sprawdzimy dostępność.
+      </p>
+    </div>
+
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        offer.map((item) => (
+          <li id={`oferta-${item.id}`} class="card group flex flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-lift" data-reveal>
+            <div class="overflow-hidden">
+              <Picture
+                src={item.image}
+                formats={['avif', 'webp']}
+                widths={[400, 640]}
+                sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+                alt={item.alt}
+                loading="lazy"
+                class="aspect-[3/2] w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+            </div>
+            <div class="flex flex-1 flex-col p-6">
+              <h3 class="text-xl font-semibold">{item.title}</h3>
+              <p class="mt-2 flex-1 text-muted">{item.description}</p>
+              <ul class="mt-4 flex flex-wrap gap-2" aria-label="Przykłady">
+                {item.tags.map((tag) => (
+                  <li class="rounded-full bg-sage-light/70 px-3 py-1 text-xs font-medium text-forest">{tag}</li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- Współpraca z firmami (B2B) – z opisu na starej stronie -->
+    <div
+      class="mt-10 flex flex-col items-start gap-6 rounded-[var(--radius-card)] bg-forest p-8 text-cream sm:p-10 lg:flex-row lg:items-center lg:justify-between"
+      data-reveal
+    >
+      <div class="max-w-2xl">
+        <h3 class="text-2xl font-semibold text-cream">Współpraca z firmami</h3>
+        <p class="mt-2 text-cream/85">
+          Zaopatrujemy firmy projektujące, zakładające i pielęgnujące ogrody oraz tereny zielone – małe i duże.
+          Zapytaj o warunki współpracy.
+        </p>
+      </div>
+      <a
+        href={`tel:${business.phone.e164}`}
+        class="btn shrink-0 bg-cream text-forest hover:bg-mint"
+      >
+        Zadzwoń: {business.phone.display}
+      </a>
+    </div>
+  </div>
+</section>
