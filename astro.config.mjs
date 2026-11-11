@@ -13,6 +13,8 @@ export default defineConfig({
   },
   // Całą stronę generujemy statycznie (najlepsza wydajność, darmowy hosting).
   output: 'static',
+  // CSS (~10 kB gzip) wstawiamy bezpośrednio do HTML – brak blokujących żądań.
+  build: { inlineStylesheets: 'always' },
   // Krótki prefetch linków wewnętrznych przy najechaniu kursorem.
   prefetch: { defaultStrategy: 'hover' },
 });

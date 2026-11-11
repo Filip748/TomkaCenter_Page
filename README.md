@@ -1,43 +1,90 @@
-# Astro Starter Kit: Minimal
+# TOMKA Centrum Ogrodnicze – strona internetowa
 
-```sh
-npm create astro@latest -- --template minimal
+Szybka, statyczna strona-wizytówka centrum ogrodniczego TOMKA w Sosnowcu.
+Zbudowana w **Astro 7 + Tailwind CSS 4 + TypeScript**, bez frameworków JS po stronie klienta.
+
+Lighthouse (mobile): **Performance 98–99 · Accessibility 100 · Best Practices 100 · SEO 100**, CLS 0.
+
+## Uruchomienie
+
+Wymagany **Node.js ≥ 22.23** (w repo jest `.nvmrc` z wersją 24).
+
+```bash
+nvm use            # przełącza na Node z .nvmrc
+npm install
+npm run dev        # http://localhost:4321 – podgląd na żywo
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+| Polecenie | Działanie |
+| --- | --- |
+| `npm run dev` | serwer deweloperski |
+| `npm run build` | build produkcyjny do `dist/` |
+| `npm run preview` | podgląd zbudowanej strony |
+| `npm run check` | sprawdzenie typów (astro check) |
+| `npm test` | testy wzorów kalkulatorów, godzin otwarcia i sezonów (Vitest) |
+| `npm run fetch-images` | jednorazowe pobranie zdjęć ze starej strony tomka.pl |
+| `npm run generate-icons` | ikony i obrazek Open Graph (`public/`) |
 
-## 🚀 Project Structure
+## Gdzie edytować treści
 
-Inside of your Astro project, you'll see the following folders and files:
+| Co | Plik |
+| --- | --- |
+| Adres, telefony, e-mail, godziny, Facebook, link do opinii Google | `src/lib/business.ts` |
+| Kategorie oferty | `src/data/offer.ts` |
+| Wzory kalkulatorów (kora, trawnik, żywopłot) | `src/lib/formulas.ts` |
+| Kalendarz prac miesiąc po miesiącu | `src/data/calendar.ts` |
+| Porady ogrodnika (Markdown) | `src/content/tips/*.md` |
+| Zdjęcia galerii i opisy (alt) | `src/data/gallery.ts` + `src/assets/images/gallery/` |
+| Sezonowy baner (choinki itp.) | `src/lib/seasons.ts` |
+| Polityka prywatności | `src/pages/polityka-prywatnosci.astro` |
+| Kolory i style | `src/styles/global.css` (tokeny w `@theme`) |
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+Zdjęcia wrzucaj w oryginale do `src/assets/images/`. Astro samo generuje AVIF/WebP w odpowiednich rozmiarach.
+
+### Do uzupełnienia przed publikacją
+
+W kodzie oznaczone jako `[UZUPEŁNIJ]`:
+
+- **Polityka prywatności:** pełna nazwa firmy, NIP i REGON administratora oraz nazwa hostingu.
+- **`business.ts`:** link do opinii z Profilu Firmy w Google, współrzędne GPS do schema.org i godziny sezonowe (jeśli są).
+- **`seasons.ts`:** faktyczna data startu sprzedaży choinek.
+
+## Struktura
+
+```
+src/
+  components/          Header, Footer, Logo, OpenNow, SeasonalBanner
+  components/sections/ Hero, Offer, Calculators, Guide, About, Gallery, Reviews, Contact
+  content/tips/        porady w Markdown
+  data/                oferta, kalendarz, galeria
+  lib/                 dane firmy, wzory, godziny, sezony, schema.org (+ testy)
+  scripts/             skrypty przeglądarki: zakładki, kalkulatory, animacje, zgoda na mapę
+  pages/               index, polityka-prywatnosci, 404
+scripts/               narzędzia: pobieranie zdjęć, generowanie ikon
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Prywatność i cookies
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Strona **nie używa własnych cookies ani analityki**. Fonty i zdjęcia są hostowane lokalnie.
+Mapa Google ładuje się dopiero po kliknięciu „Pokaż mapę Google”, a zgodę można wycofać
+przyciskiem „Ustawienia cookies” w stopce. Dzięki temu baner cookies nie jest potrzebny.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Deploy
 
-## 🧞 Commands
+Strona jest w pełni statyczna (`dist/`), więc działa na każdym hostingu.
 
-All commands are run from the root of the project, from a terminal:
+### Vercel
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+1. Wypchnij repo na GitHub.
+2. Na [vercel.com](https://vercel.com) wybierz **Add New → Project** i zaimportuj repozytorium.
+3. Framework zostanie wykryty jako **Astro** (Build: `npm run build`, Output: `dist`).
+4. W **Settings → Domains** dodaj `tomka.pl` i `www.tomka.pl`, a potem ustaw rekordy DNS według instrukcji.
 
-## 👀 Want to learn more?
+### Netlify
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+1. Na [netlify.com](https://netlify.com) wybierz **Add new site → Import an existing project**.
+2. Build command: `npm run build`, publish directory: `dist`.
+3. W **Site configuration → Environment variables** dodaj `NODE_VERSION = 24`.
+4. W **Domain management** podepnij domenę `tomka.pl`.
+
+> Po zmianie domeny zaktualizuj `site` w `astro.config.mjs` oraz `public/robots.txt`.

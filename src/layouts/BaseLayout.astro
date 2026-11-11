@@ -7,6 +7,9 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { business } from '../lib/business';
 import { localBusinessJsonLd } from '../lib/schema';
+// Preload fontu nagłówków (zestaw łaciński) – szybszy render hasła w Hero.
+// Vite nadaje im ten sam hash co w CSS, więc przeglądarka nie pobiera ich dwa razy.
+import frauncesLatin from '@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url';
 
 interface Props {
   title?: string;
@@ -43,8 +46,10 @@ const jsonLd = withBusinessSchema ? localBusinessJsonLd(siteUrl, ogImageUrl) : n
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#2f4a34" />
 
+    <link rel="preload" href={frauncesLatin} as="font" type="font/woff2" crossorigin />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
