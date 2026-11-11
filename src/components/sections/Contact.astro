@@ -1,0 +1,201 @@
+---
+/**
+ * Kontakt: adres, telefony (tel:), e-mail, godziny z „Otwarte teraz”,
+ * mapa Google za fasadą (ładowana po kliknięciu – RODO + wydajność), Facebook.
+ */
+import OpenNow from '../OpenNow.astro';
+import { business, dayNames, fullAddress } from '../../lib/business';
+
+// Kolejność w tabeli: od poniedziałku
+const week = [1, 2, 3, 4, 5, 6, 0].map((d) => ({ day: d, name: dayNames[d], hours: business.hours[d] }));
+const pretty = (t: string) => t.replace(/^0/, '');
+
+const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(business.mapQuery)}&output=embed&hl=pl`;
+const directions = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.mapQuery)}`;
+
+const iconCls = 'flex size-11 shrink-0 items-center justify-center rounded-full bg-mint text-olive-700';
+---
+
+<section id="kontakt" class="section bg-cream-dark" aria-labelledby="kontakt-title">
+  <div class="container-page">
+    <div class="max-w-2xl" data-reveal>
+      <span class="eyebrow">Kontakt</span>
+      <h2 id="kontakt-title" class="section-title">Zapraszamy do Sosnowca</h2>
+      <p class="section-lead">Przyjedź, zadzwoń albo napisz – chętnie doradzimy i sprawdzimy dostępność roślin.</p>
+    </div>
+
+    <div class="mt-10 grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
+      <!-- ─────────── Dane kontaktowe ─────────── -->
+      <div class="card p-6 sm:p-8" data-reveal>
+        <address class="space-y-6 not-italic">
+          <div class="flex gap-4">
+            <span class={iconCls} aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12Z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+            </span>
+            <div>
+              <h3 class="font-sans text-sm font-semibold tracking-wider text-muted uppercase">Adres</h3>
+              <p class="mt-1 text-lg font-medium text-ink">
+                {business.address.street}<br />{business.address.postalCode} {business.address.city}
+              </p>
+              <a href={directions} target="_blank" rel="noopener" class="mt-1 inline-block text-sm font-semibold text-olive-700 underline underline-offset-2 hover:text-forest">
+                Wyznacz trasę<span class="sr-only"> w Mapach Google (otwiera się w nowej karcie)</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <span class={iconCls} aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5a2 2 0 0 1 2-2h2.3a1 1 0 0 1 1 .8l1 4a1 1 0 0 1-.5 1.1l-1.6.9a12 12 0 0 0 5 5l.9-1.6a1 1 0 0 1 1.1-.5l4 1a1 1 0 0 1 .8 1V19a2 2 0 0 1-2 2h-1C9.7 21 3 14.3 3 6V5Z"></path></svg>
+            </span>
+            <div>
+              <h3 class="font-sans text-sm font-semibold tracking-wider text-muted uppercase">Telefon</h3>
+              <p class="mt-1">
+                <a href={`tel:${business.phone.e164}`} class="text-lg font-semibold text-forest hover:underline">{business.phone.display}</a>
+              </p>
+              {
+                business.phonesExtra.map((p) => (
+                  <p>
+                    <a href={`tel:${p.e164}`} class="font-medium text-ink hover:underline">
+                      {p.display}
+                    </a>
+                  </p>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <span class={iconCls} aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
+            </span>
+            <div>
+              <h3 class="font-sans text-sm font-semibold tracking-wider text-muted uppercase">E-mail</h3>
+              <p class="mt-1"><a href={`mailto:${business.email}`} class="text-lg font-medium text-ink hover:underline">{business.email}</a></p>
+            </div>
+          </div>
+        </address>
+
+        <div class="mt-8 border-t border-sage-light pt-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h3 class="font-sans text-sm font-semibold tracking-wider text-muted uppercase">Godziny otwarcia</h3>
+            <OpenNow class="bg-cream shadow-none" />
+          </div>
+          <table class="mt-4 w-full text-left">
+            <caption class="sr-only">Godziny otwarcia w poszczególne dni tygodnia</caption>
+            <tbody>
+              {
+                week.map((w) => (
+                  <tr data-day={w.day} class="border-b border-sage-light/60 last:border-0 data-[today]:font-semibold data-[today]:text-forest">
+                    <th scope="row" class="py-2.5 font-normal in-data-today:font-semibold">
+                      {w.name}
+                      <span data-today-label class="ml-2 hidden rounded-full bg-mint px-2 py-0.5 text-xs font-semibold text-forest">
+                        dziś
+                      </span>
+                    </th>
+                    <td class="py-2.5 text-right tabular-nums">
+                      {w.hours ? `${pretty(w.hours.open)} – ${pretty(w.hours.close)}` : <span class="text-muted">nieczynne</span>}
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+          {/* [UZUPEŁNIJ] jeśli w sezonie (np. wiosna, grudzień) godziny są dłuższe – dopisz tu notkę */}
+        </div>
+
+        <a
+          href={business.facebook}
+          target="_blank"
+          rel="noopener"
+          class="mt-8 flex items-center gap-3 rounded-2xl bg-[#1877F2]/10 p-4 font-semibold text-forest transition hover:bg-[#1877F2]/15"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 text-[#1877F2]" fill="currentColor"><path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4h-3V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12Z"></path></svg>
+          <span>Obserwuj nas na Facebooku – nowości i promocje</span>
+          <span class="sr-only">(otwiera się w nowej karcie)</span>
+          <span aria-hidden="true" class="ml-auto">→</span>
+        </a>
+      </div>
+
+      <!-- ─────────── Mapa (fasada) ─────────── -->
+      <div class="card relative min-h-[22rem] overflow-hidden lg:min-h-full" data-reveal>
+        <div id="map-facade" class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-sage-light p-6 text-center">
+          <!-- Dekoracyjna „mapa” w CSS – bez pobierania czegokolwiek z Google -->
+          <div aria-hidden="true" class="map-pattern absolute inset-0 opacity-60"></div>
+          <div class="relative flex size-16 items-center justify-center rounded-full bg-olive-700 text-white shadow-lift">
+            <svg aria-hidden="true" viewBox="0 0 24 24" class="size-8" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"></path></svg>
+          </div>
+          <p class="relative font-display text-xl font-semibold text-forest">{fullAddress}</p>
+          <button type="button" id="map-load" class="btn-primary relative">Pokaż mapę Google</button>
+          <p class="relative max-w-sm text-xs text-muted">
+            Po kliknięciu załadujemy mapę z serwerów Google, które mogą zapisać pliki cookies.{' '}
+            <a href="/polityka-prywatnosci/" class="underline hover:text-forest">Więcej informacji</a>
+          </p>
+        </div>
+        <div id="map-container" class="absolute inset-0" hidden data-src={mapSrc}></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Delikatna siatka „ulic” jako tło fasady mapy */
+  .map-pattern {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.7) 2px, transparent 2px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.7) 2px, transparent 2px),
+      linear-gradient(35deg, transparent 48%, rgb(255 255 255 / 0.9) 48%, rgb(255 255 255 / 0.9) 52%, transparent 52%);
+    background-size:
+      48px 48px,
+      48px 48px,
+      100% 100%;
+  }
+</style>
+
+<script>
+  import { hasMapsConsent, setMapsConsent } from '../../scripts/consent';
+
+  /* ── Dzisiejszy dzień w tabeli godzin ── */
+  const today = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Warsaw', weekday: 'short' }).format(new Date());
+  const dayIdx = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(today);
+  const row = document.querySelector<HTMLElement>(`#kontakt tr[data-day="${dayIdx}"]`);
+  if (row) {
+    row.dataset.today = '';
+    row.querySelector('[data-today-label]')?.classList.remove('hidden');
+  }
+
+  /* ── Mapa za fasadą ── */
+  const facade = document.getElementById('map-facade')!;
+  const container = document.getElementById('map-container')!;
+
+  function loadMap() {
+    if (container.querySelector('iframe')) return;
+    const iframe = document.createElement('iframe');
+    iframe.src = container.dataset.src!;
+    iframe.title = 'Mapa dojazdu do TOMKA Centrum Ogrodnicze';
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    iframe.className = 'size-full border-0';
+    iframe.allowFullscreen = true;
+    container.append(iframe);
+    container.hidden = false;
+    facade.hidden = true;
+  }
+
+  function unloadMap() {
+    container.replaceChildren();
+    container.hidden = true;
+    facade.hidden = false;
+  }
+
+  document.getElementById('map-load')?.addEventListener('click', () => {
+    setMapsConsent(true);
+    loadMap();
+  });
+
+  if (hasMapsConsent()) loadMap();
+
+  // Wycofanie zgody (przycisk „Ustawienia cookies” w stopce)
+  document.addEventListener('consent-change', (e) => {
+    if (!(e as CustomEvent<{ maps: boolean }>).detail.maps) unloadMap();
+  });
+</script>

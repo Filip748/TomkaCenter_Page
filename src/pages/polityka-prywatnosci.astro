@@ -1,0 +1,116 @@
+---
+/**
+ * Polityka prywatności i cookies (RODO).
+ * Treść opisuje rzeczywiste działanie strony: brak własnych cookies i analityki,
+ * fonty hostowane lokalnie, mapa Google tylko po zgodzie.
+ * [UZUPEŁNIJ] dane administratora (pełna nazwa firmy, NIP, właściciel) –
+ * najlepiej po konsultacji z księgowością/prawnikiem.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { business, fullAddress } from '../lib/business';
+
+const updated = '11 listopada 2026';
+---
+
+<BaseLayout
+  title={`Polityka prywatności i cookies – ${business.name}`}
+  description={`Zasady przetwarzania danych osobowych i wykorzystania plików cookies na stronie ${business.name}.`}
+>
+  <article class="section">
+    <div class="container-page max-w-3xl">
+      <span class="eyebrow">RODO</span>
+      <h1 class="section-title">Polityka prywatności i cookies</h1>
+      <p class="mt-3 text-sm text-muted">Ostatnia aktualizacja: {updated}</p>
+
+      <div class="policy mt-10">
+        <h2>1. Administrator danych</h2>
+        <p>
+          Administratorem danych osobowych jest {business.name}, {fullAddress}{' '}
+          <span class="placeholder">[UZUPEŁNIJ: pełna nazwa firmy / imię i nazwisko właściciela, NIP, REGON]</span>.
+        </p>
+        <p>
+          Kontakt w sprawach danych osobowych: e-mail <a href={`mailto:${business.email}`}>{business.email}</a>, tel.{' '}
+          <a href={`tel:${business.phone.e164}`}>{business.phone.display}</a>.
+        </p>
+
+        <h2>2. Jakie dane przetwarzamy i w jakim celu</h2>
+        <ul>
+          <li>
+            <strong>Kontakt telefoniczny i e-mailowy</strong> – jeśli do nas zadzwonisz lub napiszesz, przetwarzamy
+            podane przez Ciebie dane (np. imię, numer telefonu, adres e-mail, treść wiadomości) wyłącznie w celu
+            udzielenia odpowiedzi i ewentualnej realizacji zamówienia (art. 6 ust. 1 lit. b i f RODO).
+          </li>
+          <li>
+            <strong>Logi serwera</strong> – firma hostingowa automatycznie zapisuje techniczne informacje o wizycie
+            (m.in. adres IP, typ przeglądarki, datę i godzinę) w celu zapewnienia bezpieczeństwa i działania strony
+            (art. 6 ust. 1 lit. f RODO). Dane te nie służą do identyfikacji odwiedzających.
+          </li>
+        </ul>
+        <p>Strona nie zawiera formularzy, nie korzysta z narzędzi analitycznych ani reklamowych.</p>
+
+        <h2>3. Pliki cookies</h2>
+        <p>
+          <strong>Nasza strona nie używa własnych plików cookies.</strong> Czcionki i zdjęcia są przechowywane na naszym
+          serwerze, więc ich wyświetlenie nie wymaga łączenia się z zewnętrznymi serwisami.
+        </p>
+        <p>
+          Twoja decyzja o wyświetlaniu mapy jest zapamiętywana w pamięci lokalnej przeglądarki (localStorage). To nie
+          jest plik cookie i nie jest przesyłany do nikogo.
+        </p>
+
+        <h2>4. Mapa Google</h2>
+        <p>
+          W sekcji „Kontakt” możesz wyświetlić mapę dojazdu dostarczaną przez Google Ireland Ltd. Mapa ładuje się{' '}
+          <strong>dopiero po kliknięciu</strong> przycisku „Pokaż mapę Google”. Wtedy Google może zapisać na Twoim
+          urządzeniu pliki cookies i przetwarzać Twoje dane (np. adres IP) zgodnie ze swoją{' '}
+          <a href="https://policies.google.com/privacy?hl=pl" target="_blank" rel="noopener">polityką prywatności</a>.
+          Podstawą jest Twoja zgoda (art. 6 ust. 1 lit. a RODO), którą możesz w każdej chwili wycofać przyciskiem
+          „Ustawienia cookies” w stopce strony.
+        </p>
+
+        <h2>5. Linki zewnętrzne</h2>
+        <p>
+          Strona zawiera linki do naszego profilu na Facebooku i do opinii w Google. Po ich kliknięciu obowiązują
+          zasady prywatności tych serwisów (Meta Platforms Ireland Ltd., Google Ireland Ltd.).
+        </p>
+
+        <h2>6. Odbiorcy danych i okres przechowywania</h2>
+        <p>
+          Dane mogą być powierzane wyłącznie podmiotom, które świadczą dla nas usługi techniczne (hosting, poczta
+          e-mail) <span class="placeholder">[UZUPEŁNIJ: nazwa hostingu, np. Vercel Inc. / Netlify Inc.]</span>.
+          Korespondencję przechowujemy przez czas potrzebny do obsługi sprawy, a następnie przez okres przedawnienia
+          ewentualnych roszczeń.
+        </p>
+
+        <h2>7. Twoje prawa</h2>
+        <p>
+          Masz prawo dostępu do swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia,
+          wniesienia sprzeciwu oraz cofnięcia zgody w dowolnym momencie. Przysługuje Ci także prawo wniesienia skargi do
+          Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa).
+        </p>
+      </div>
+
+      <a href="/" class="btn-secondary mt-12">← Wróć na stronę główną</a>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  @reference '../styles/global.css';
+  .policy :global(h2) {
+    @apply mt-10 mb-3 text-2xl font-semibold;
+  }
+  .policy :global(p),
+  .policy :global(li) {
+    @apply my-3 leading-relaxed text-ink;
+  }
+  .policy :global(ul) {
+    @apply list-disc pl-5 marker:text-olive;
+  }
+  .policy :global(a) {
+    @apply font-semibold text-olive-700 underline underline-offset-2 hover:text-forest;
+  }
+  .placeholder {
+    @apply rounded bg-blush px-1.5 py-0.5 text-sm font-semibold text-forest;
+  }
+</style>

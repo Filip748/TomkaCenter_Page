@@ -67,7 +67,7 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="border-t border-cream/15">
-    <div class="container-page flex flex-col gap-3 py-6 text-sm text-cream/75 sm:flex-row sm:items-center sm:justify-between">
+    <div class="container-page flex flex-col gap-3 py-6 text-sm text-cream/75 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <p>© {year} {business.name}®. Wszelkie prawa zastrzeżone.</p>
       <ul class="flex flex-wrap gap-x-5 gap-y-2">
         <li><a class="hover:text-cream hover:underline" href="/polityka-prywatnosci/">Polityka prywatności i cookies</a></li>
@@ -75,6 +75,28 @@ const year = new Date().getFullYear();
           <button type="button" data-cookie-settings class="hover:text-cream hover:underline">Ustawienia cookies</button>
         </li>
       </ul>
+      <p data-cookie-status role="status" class="text-cream sm:basis-full sm:text-right"></p>
     </div>
   </div>
 </footer>
+
+<script>
+  /*
+   * „Ustawienia cookies”: strona nie używa własnych cookies. Jedyną zgodą jest
+   * mapa Google – tutaj można ją wycofać (mapa wróci do fasady).
+   */
+  import { hasMapsConsent, setMapsConsent } from '../scripts/consent';
+
+  const btn = document.querySelector<HTMLButtonElement>('[data-cookie-settings]');
+  const status = document.querySelector<HTMLElement>('[data-cookie-status]');
+  btn?.addEventListener('click', () => {
+    if (!status) return;
+    if (hasMapsConsent()) {
+      setMapsConsent(false);
+      status.textContent = 'Wycofano zgodę na mapę Google. Mapa nie będzie ładowana automatycznie.';
+    } else {
+      status.textContent =
+        'Ta strona nie używa plików cookies. Mapa Google ładuje się tylko po kliknięciu „Pokaż mapę Google”.';
+    }
+  });
+</script>
