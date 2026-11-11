@@ -1,0 +1,80 @@
+---
+/** Stopka: dane kontaktowe, menu, Facebook, RODO/cookies. */
+import Logo from './Logo.astro';
+import { business, fullAddress } from '../lib/business';
+import { navItems } from '../lib/nav';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-auto bg-forest text-cream">
+  <div class="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="lg:col-span-2">
+      <div class="inline-block rounded-2xl bg-cream p-3">
+        <Logo class="h-12 w-auto" />
+      </div>
+      <p class="mt-4 max-w-sm text-cream/85">
+        Centrum ogrodnicze w Sosnowcu od {business.foundedYear} roku. Członek Polskiego Stowarzyszenia Centrów
+        Ogrodniczych.
+      </p>
+      <a
+        href={business.facebook}
+        rel="noopener"
+        target="_blank"
+        class="mt-5 inline-flex items-center gap-2 rounded-full bg-cream/10 px-4 py-2 font-medium text-cream transition hover:bg-cream/20"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-5" fill="currentColor"
+          ><path
+            d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.4H8v3h2.6V21h2.9Z"
+          ></path></svg
+        >
+        Facebook<span class="sr-only"> (otwiera się w nowej karcie)</span>
+      </a>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-sm font-semibold tracking-wider text-mint uppercase">Kontakt</h2>
+      <address class="mt-4 space-y-2 not-italic text-cream/90">
+        <p>{fullAddress}</p>
+        <p><a class="hover:underline" href={`tel:${business.phone.e164}`}>tel. {business.phone.display}</a></p>
+        {
+          business.phonesExtra.map((p) => (
+            <p>
+              <a class="hover:underline" href={`tel:${p.e164}`}>
+                tel. {p.display}
+              </a>
+            </p>
+          ))
+        }
+        <p><a class="hover:underline" href={`mailto:${business.email}`}>{business.email}</a></p>
+      </address>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-sm font-semibold tracking-wider text-mint uppercase">Na skróty</h2>
+      <ul class="mt-4 grid grid-cols-2 gap-2 text-cream/90 sm:grid-cols-1">
+        {
+          navItems.map((item) => (
+            <li>
+              <a class="hover:underline" href={item.href}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-cream/15">
+    <div class="container-page flex flex-col gap-3 py-6 text-sm text-cream/75 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} {business.name}®. Wszelkie prawa zastrzeżone.</p>
+      <ul class="flex flex-wrap gap-x-5 gap-y-2">
+        <li><a class="hover:text-cream hover:underline" href="/polityka-prywatnosci/">Polityka prywatności i cookies</a></li>
+        <li>
+          <button type="button" data-cookie-settings class="hover:text-cream hover:underline">Ustawienia cookies</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>

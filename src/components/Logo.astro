@@ -1,0 +1,20 @@
+---
+/** Logo TOMKA (z oryginalnej strony). Astro generuje WebP w 2 gęstościach. */
+import { Image } from 'astro:assets';
+import logo from '../assets/images/logo/tomka-logo.png';
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<Image
+  src={logo}
+  alt="TOMKA Centrum Ogrodnicze"
+  width={125}
+  densities={[1, 2]}
+  format="webp"
+  loading="eager"
+  class={className}
+/>
