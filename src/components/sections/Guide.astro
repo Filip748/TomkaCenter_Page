@@ -1,0 +1,171 @@
+---
+/**
+ * Poradnik ogrodnika: kalendarz prac (zakładki z miesiącami, domyślnie
+ * bieżący miesiąc) + porady z plików Markdown (src/content/tips).
+ */
+import { Picture } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
+import { calendar } from '../../data/calendar';
+
+const buildMonth = new Date().getMonth();
+const tips = (await getCollection('tips')).sort((a, b) => a.data.order - b.data.order);
+const rendered = await Promise.all(tips.map(async (t) => ({ tip: t, Content: (await render(t)).Content })));
+---
+
+<section id="poradnik" class="section" aria-labelledby="poradnik-title">
+  <div class="container-page">
+    <div class="max-w-2xl" data-reveal>
+      <span class="eyebrow">Poradnik ogrodnika</span>
+      <h2 id="poradnik-title" class="section-title">Co robić w ogrodzie – miesiąc po miesiącu</h2>
+      <p class="section-lead">Sprawdzone porady z ponad 30 lat pracy z roślinami. Wybierz miesiąc albo przeczytaj poradniki poniżej.</p>
+    </div>
+
+    <!-- ─────────── Kalendarz prac ─────────── -->
+    <div class="card mt-10 overflow-hidden" data-reveal>
+      <div class="border-b border-sage-light bg-cream/60 p-3 sm:p-4">
+        <div
+          role="tablist"
+          aria-label="Miesiąc"
+          id="calendar-tabs"
+          class="relative -mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1 sm:grid sm:grid-cols-6 sm:overflow-visible lg:grid-cols-12"
+        >
+          {
+            calendar.map((m, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`month-tab-${i}`}
+                aria-controls={`month-panel-${i}`}
+                aria-selected={i === buildMonth ? 'true' : 'false'}
+                tabindex={i === buildMonth ? 0 : -1}
+                data-month={i}
+                class="relative shrink-0 snap-start rounded-xl px-3.5 py-2 text-sm font-semibold text-muted transition hover:bg-mint hover:text-forest aria-selected:bg-olive-700 aria-selected:text-white"
+              >
+                {/* Na szerokim ekranie (12 kolumn) skrót „Sty”, pełna nazwa dla czytników */}
+                <span aria-hidden="true" class="hidden lg:inline">{m.name.slice(0, 3)}</span>
+                <span class="lg:sr-only">{m.name}</span>
+                <span data-now-dot class="absolute top-1 right-1 hidden size-1.5 rounded-full bg-blush" aria-hidden="true"></span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      {
+        calendar.map((m, i) => (
+          <div
+            role="tabpanel"
+            id={`month-panel-${i}`}
+            aria-labelledby={`month-tab-${i}`}
+            tabindex="0"
+            hidden={i !== buildMonth}
+            class="grid gap-6 p-6 sm:p-8 md:grid-cols-[14rem_1fr]"
+          >
+            <div>
+              <h3 class="text-3xl font-semibold">{m.name}</h3>
+              <p class="mt-2 text-muted">{m.intro}</p>
+              <p data-now-label hidden class="mt-4 inline-flex rounded-full bg-blush px-3 py-1 text-xs font-semibold text-forest">
+                Bieżący miesiąc
+              </p>
+            </div>
+            <ul class="grid gap-3 sm:grid-cols-2">
+              {m.tasks.map((task) => (
+                <li class="flex gap-3 rounded-xl bg-cream/70 p-4">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" class="mt-0.5 size-5 shrink-0 text-olive" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 21v-9" />
+                    <path d="M12 12c0-4-3-6-7-6 0 4 3 6 7 6Z" />
+                    <path d="M12 10c0-3.5 2.5-6 7-6 0 4-3 6-7 6Z" />
+                  </svg>
+                  <span>{task}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <!-- ─────────── Porady ─────────── -->
+    <h3 class="mt-16 text-2xl font-semibold sm:text-3xl" data-reveal>Porady</h3>
+    <div class="mt-6 grid items-start gap-6 md:grid-cols-2">
+      {
+        rendered.map(({ tip, Content }) => (
+          <article id={`porada-${tip.id}`} class="card flex flex-col overflow-hidden" data-reveal>
+            <Picture
+              src={tip.data.image}
+              formats={['avif', 'webp']}
+              widths={[480, 720]}
+              sizes="(min-width: 768px) 540px, 100vw"
+              alt={tip.data.imageAlt}
+              loading="lazy"
+              class="aspect-[2/1] w-full object-cover"
+            />
+            <div class="flex flex-1 flex-col p-6 sm:p-7">
+              <h4 class="font-display text-xl font-semibold text-forest">{tip.data.title}</h4>
+              <p class="mt-2 text-muted">{tip.data.summary}</p>
+              <details class="group mt-4">
+                <summary class="inline-flex cursor-pointer list-none items-center gap-2 rounded-full font-semibold text-olive-700 hover:text-forest [&::-webkit-details-marker]:hidden">
+                  <span class="group-open:hidden">Czytaj poradę</span>
+                  <span class="hidden group-open:inline">Zwiń</span>
+                  <span aria-hidden="true" class="transition-transform group-open:rotate-180">▾</span>
+                </summary>
+                <div class="prose-tip mt-4">
+                  <Content />
+                </div>
+              </details>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  @reference '../../styles/global.css';
+  /* Minimalne style dla treści Markdown (bez wtyczki typography) */
+  .prose-tip :global(h3) {
+    @apply mt-6 mb-2 font-sans text-base font-bold text-forest first:mt-0;
+  }
+  .prose-tip :global(p) {
+    @apply my-3 text-ink;
+  }
+  .prose-tip :global(ul),
+  .prose-tip :global(ol) {
+    @apply my-3 space-y-2 pl-5 text-ink;
+  }
+  .prose-tip :global(ul) {
+    @apply list-disc marker:text-olive;
+  }
+  .prose-tip :global(ol) {
+    @apply list-decimal marker:font-semibold marker:text-olive-700;
+  }
+  .prose-tip :global(strong) {
+    @apply font-semibold text-forest;
+  }
+  .prose-tip :global(a) {
+    @apply font-semibold text-olive-700 underline underline-offset-2 hover:text-forest;
+  }
+</style>
+
+<script>
+  import { initTabs } from '../../scripts/tabs';
+
+  // Domyślnie pokazujemy BIEŻĄCY miesiąc odwiedzającego (strona mogła być zbudowana wcześniej)
+  const tablist = document.getElementById('calendar-tabs');
+  if (tablist) {
+    // Na telefonie (poziomy pasek) przewijamy TYLKO pasek, nie całą stronę
+    const center = (tab: HTMLElement) => {
+      tablist.scrollLeft = tab.offsetLeft - tablist.clientWidth / 2 + tab.clientWidth / 2;
+    };
+    const { select, tabs } = initTabs(tablist, center);
+    const now = new Date().getMonth();
+    const current = tabs[now];
+    if (current) {
+      current.querySelector('[data-now-dot]')?.classList.remove('hidden');
+      document.querySelector<HTMLElement>(`#month-panel-${now} [data-now-label]`)!.hidden = false;
+      if (current.getAttribute('aria-selected') !== 'true') select(current, false);
+      else center(current);
+    }
+  }
+</script>

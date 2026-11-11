@@ -4,36 +4,11 @@
  */
 import { calcBark, calcHedge, calcLawn, type LawnMethod } from '../lib/formulas';
 import { plural } from '../lib/plural';
+import { initTabs } from './tabs';
 
-/* ─────────── Zakładki (strzałki, Home/End – wzorzec WAI-ARIA) ─────────── */
+/* ─────────── Zakładki (wspólny moduł WAI-ARIA) ─────────── */
 const tablist = document.querySelector<HTMLElement>('#kalkulatory [role="tablist"]');
-const tabs = tablist ? [...tablist.querySelectorAll<HTMLButtonElement>('[role="tab"]')] : [];
-
-function selectTab(tab: HTMLButtonElement, focus = true) {
-  for (const t of tabs) {
-    const selected = t === tab;
-    t.setAttribute('aria-selected', String(selected));
-    t.tabIndex = selected ? 0 : -1;
-    document.getElementById(t.getAttribute('aria-controls')!)!.hidden = !selected;
-  }
-  if (focus) tab.focus();
-}
-
-tabs.forEach((tab, i) => {
-  tab.addEventListener('click', () => selectTab(tab));
-  tab.addEventListener('keydown', (e) => {
-    const map: Record<string, number> = {
-      ArrowRight: (i + 1) % tabs.length,
-      ArrowLeft: (i - 1 + tabs.length) % tabs.length,
-      Home: 0,
-      End: tabs.length - 1,
-    };
-    if (e.key in map) {
-      e.preventDefault();
-      selectTab(tabs[map[e.key]]);
-    }
-  });
-});
+if (tablist) initTabs(tablist);
 
 /* ─────────── Pomocnicze ─────────── */
 const nf = (max = 2) => new Intl.NumberFormat('pl-PL', { maximumFractionDigits: max });
