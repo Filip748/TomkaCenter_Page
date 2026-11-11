@@ -1,0 +1,213 @@
+---
+/**
+ * Kalkulatory ogrodowe w zakładkach (wzorzec ARIA Tabs).
+ * Wzory: src/lib/formulas.ts. Logika UI: src/scripts/calculators.ts.
+ * Bez JS formularze są widoczne, ale wynik pokazuje się dopiero z JS
+ * (komunikat <noscript>).
+ */
+import { BARK, HEDGE, LAWN } from '../../lib/formulas';
+import { business } from '../../lib/business';
+
+const tabs = [
+  { id: 'kora', label: 'Kora' },
+  { id: 'trawnik', label: 'Trawnik' },
+  { id: 'zywoplot', label: 'Żywopłot' },
+];
+
+const fmt = (n: number) => n.toLocaleString('pl-PL');
+const inputCls =
+  'mt-1.5 block w-full rounded-xl border border-sage bg-white px-4 py-3 text-base text-ink shadow-xs focus:border-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-700/30 aria-[invalid=true]:border-rose-600';
+const labelCls = 'block text-sm font-semibold text-forest';
+const hintCls = 'mt-1 text-sm text-muted';
+---
+
+<section id="kalkulatory" class="section bg-cream-dark" aria-labelledby="kalk-title">
+  <div class="container-page">
+    <div class="max-w-2xl" data-reveal>
+      <span class="eyebrow">Kalkulatory</span>
+      <h2 id="kalk-title" class="section-title">Policz, ile potrzebujesz</h2>
+      <p class="section-lead">
+        Wpisz wymiary, a podpowiemy, ile kupić. Wyniki zaokrąglamy w górę do pełnych sztuk – żeby niczego nie
+        zabrakło.
+      </p>
+    </div>
+
+    <div class="card mt-10 p-4 sm:p-8" data-reveal>
+      <div role="tablist" aria-label="Wybierz kalkulator" class="flex gap-1 overflow-x-auto rounded-full bg-cream p-1.5 sm:inline-flex">
+        {
+          tabs.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`tab-${t.id}`}
+              aria-controls={`panel-${t.id}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              class="flex-1 rounded-full px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-muted transition hover:text-forest aria-selected:bg-olive-700 aria-selected:text-white aria-selected:shadow-soft sm:flex-none sm:px-7"
+            >
+              {t.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <noscript>
+        <p class="mt-6 rounded-xl bg-blush/60 p-4 text-forest">
+          Kalkulatory wymagają włączonego JavaScriptu. Możesz też zadzwonić: {business.phone.display} – policzymy za
+          Ciebie.
+        </p>
+      </noscript>
+
+      <!-- ─────────── KORA ─────────── -->
+      <div role="tabpanel" id="panel-kora" aria-labelledby="tab-kora" tabindex="0" class="mt-8 focus-visible:outline-offset-8">
+        <form data-calc="bark" class="grid gap-8 lg:grid-cols-[1fr_minmax(0,22rem)]" novalidate>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label for="bark-area" class={labelCls}>Powierzchnia rabaty [m²]</label>
+              <input id="bark-area" name="area" type="number" inputmode="decimal" min="0" step="0.1" value="10" class={inputCls} aria-describedby="bark-error" />
+            </div>
+            <div>
+              <label for="bark-depth" class={labelCls}>Grubość warstwy [cm]</label>
+              <input id="bark-depth" name="depthCm" type="number" inputmode="decimal" min={BARK.minDepthCm} max={BARK.maxDepthCm} step="1" value={BARK.defaultDepthCm} class={inputCls} aria-describedby="bark-depth-hint bark-error" />
+              <p id="bark-depth-hint" class={hintCls}>Zalecane 5–8 cm.</p>
+            </div>
+            <div>
+              <label for="bark-bag" class={labelCls}>Pojemność worka</label>
+              <select id="bark-bag" name="bagLiters" class={inputCls}>
+                {BARK.bagSizes.map((s) => <option value={s} selected={s === BARK.defaultBagLiters}>{s} l</option>)}
+              </select>
+            </div>
+          </div>
+          <div class="result-box" aria-live="polite" data-result>
+            <p class="text-sm font-semibold tracking-wider text-olive-700 uppercase">Potrzebujesz</p>
+            <p class="mt-2 font-display text-5xl font-semibold text-forest"><span data-out="bags">7</span> <span class="text-2xl" data-out="bagsWord">worków</span></p>
+            <p class="mt-3 text-muted">to razem <strong class="text-ink" data-out="liters">500 l</strong> (<span data-out="m3">0,5 m³</span>) kory</p>
+            <p id="bark-error" class="error-msg" data-error></p>
+          </div>
+        </form>
+      </div>
+
+      <!-- ─────────── TRAWNIK ─────────── -->
+      <div role="tabpanel" id="panel-trawnik" aria-labelledby="tab-trawnik" tabindex="0" class="mt-8 focus-visible:outline-offset-8" hidden>
+        <form data-calc="lawn" class="grid gap-8 lg:grid-cols-[1fr_minmax(0,22rem)]" novalidate>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label for="lawn-area" class={labelCls}>Powierzchnia trawnika [m²]</label>
+              <input id="lawn-area" name="area" type="number" inputmode="decimal" min="0" step="1" value="100" class={inputCls} aria-describedby="lawn-error" />
+            </div>
+            <fieldset class="sm:col-span-2">
+              <legend class={labelCls}>Sposób</legend>
+              <div class="mt-2 grid gap-2 sm:grid-cols-3">
+                {[
+                  { v: 'seed-new', l: 'Siew – nowy trawnik', h: `${LAWN.seedGramsPerM2.new} g/m²` },
+                  { v: 'seed-overseed', l: 'Dosiewka', h: `${LAWN.seedGramsPerM2.overseed} g/m²` },
+                  { v: 'roll', l: 'Trawa z rolki', h: 'rolka = 1 m², +5% zapasu' },
+                ].map((o, i) => (
+                  <label class="flex cursor-pointer flex-col rounded-xl border border-sage bg-white px-4 py-3 transition hover:bg-mint/50 has-checked:border-olive-700 has-checked:bg-mint has-focus-visible:ring-2 has-focus-visible:ring-olive-700">
+                    <span class="flex items-center gap-2 font-medium text-ink">
+                      <input type="radio" name="method" value={o.v} checked={i === 0} class="size-4 accent-olive-700" />
+                      {o.l}
+                    </span>
+                    <span class="mt-0.5 pl-6 text-xs text-muted">{o.h}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <div data-seed-only>
+              <label for="lawn-seedpack" class={labelCls}>Opakowanie nasion</label>
+              <select id="lawn-seedpack" name="seedPackKg" class={inputCls}>
+                {LAWN.seedPackSizes.map((s) => <option value={s} selected={s === LAWN.defaultSeedPackKg}>{fmt(s)} kg</option>)}
+              </select>
+            </div>
+            <div>
+              <label for="lawn-fert" class={labelCls}>Opakowanie nawozu</label>
+              <select id="lawn-fert" name="fertilizerPackKg" class={inputCls} aria-describedby="lawn-fert-hint">
+                {LAWN.fertilizerPackSizes.map((s) => <option value={s} selected={s === LAWN.defaultFertilizerPackKg}>{fmt(s)} kg</option>)}
+              </select>
+              <p id="lawn-fert-hint" class={hintCls}>Dawka ok. {LAWN.fertilizerGramsPerM2} g/m² na jedno nawożenie.</p>
+            </div>
+          </div>
+          <div class="result-box" aria-live="polite" data-result>
+            <p class="text-sm font-semibold tracking-wider text-olive-700 uppercase">Potrzebujesz</p>
+            <div data-seed-only>
+              <p class="mt-2 font-display text-5xl font-semibold text-forest"><span data-out="seedPacks">3</span> <span class="text-2xl" data-out="seedPacksWord">opakowania</span></p>
+              <p class="mt-1 text-muted">nasion (razem <strong class="text-ink" data-out="seedKg">3 kg</strong>)</p>
+            </div>
+            <div data-roll-only hidden>
+              <p class="mt-2 font-display text-5xl font-semibold text-forest"><span data-out="rolls">105</span> <span class="text-2xl" data-out="rollsWord">rolek</span></p>
+              <p class="mt-1 text-muted">trawy (1 rolka ≈ 1 m², z zapasem)</p>
+            </div>
+            <p class="mt-4 border-t border-sage/60 pt-4 text-ink">
+              + <strong data-out="fertPacks">1</strong> <span data-out="fertPacksWord">opakowanie</span> nawozu{' '}
+              <span class="text-muted">(<span data-out="fertKg">3 kg</span>)</span>
+            </p>
+            <p id="lawn-error" class="error-msg" data-error></p>
+          </div>
+        </form>
+      </div>
+
+      <!-- ─────────── ŻYWOPŁOT ─────────── -->
+      <div role="tabpanel" id="panel-zywoplot" aria-labelledby="tab-zywoplot" tabindex="0" class="mt-8 focus-visible:outline-offset-8" hidden>
+        <form data-calc="hedge" class="grid gap-8 lg:grid-cols-[1fr_minmax(0,22rem)]" novalidate>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label for="hedge-length" class={labelCls}>Długość żywopłotu [m]</label>
+              <input id="hedge-length" name="length" type="number" inputmode="decimal" min="0" step="0.1" value="10" class={inputCls} aria-describedby="hedge-error" />
+            </div>
+            <div>
+              <label for="hedge-plant" class={labelCls}>Roślina</label>
+              <select id="hedge-plant" name="preset" class={inputCls}>
+                {HEDGE.presets.map((p) => <option value={p.spacingM} selected={p.id === HEDGE.defaultPresetId}>{p.label} (co {fmt(p.spacingM * 100)} cm)</option>)}
+                <option value="custom">Inna – własny rozstaw</option>
+              </select>
+            </div>
+            <div>
+              <label for="hedge-spacing" class={labelCls}>Rozstaw [cm]</label>
+              <input id="hedge-spacing" name="spacingCm" type="number" inputmode="numeric" min={HEDGE.minSpacingM * 100} max={HEDGE.maxSpacingM * 100} step="5" value="50" class={inputCls} aria-describedby="hedge-error" />
+            </div>
+            <fieldset class="sm:col-span-2">
+              <legend class={labelCls}>Liczba rzędów</legend>
+              <div class="mt-2 flex gap-2">
+                {[1, 2].map((n) => (
+                  <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-sage bg-white px-4 py-3 font-medium transition hover:bg-mint/50 has-checked:border-olive-700 has-checked:bg-mint has-focus-visible:ring-2 has-focus-visible:ring-olive-700">
+                    <input type="radio" name="rows" value={n} checked={n === 1} class="size-4 accent-olive-700" />
+                    {n === 1 ? '1 rząd' : '2 rzędy (mijankowo)'}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <div class="result-box" aria-live="polite" data-result>
+            <p class="text-sm font-semibold tracking-wider text-olive-700 uppercase">Potrzebujesz</p>
+            <p class="mt-2 font-display text-5xl font-semibold text-forest"><span data-out="plants">20</span> <span class="text-2xl" data-out="plantsWord">sadzonek</span></p>
+            <p class="mt-3 text-muted">≈ <span data-out="perMeter">2</span> szt. na metr bieżący</p>
+            <p id="hedge-error" class="error-msg" data-error></p>
+          </div>
+        </form>
+      </div>
+
+      <p class="mt-8 text-sm text-muted">
+        Wyniki są orientacyjne. Masz nietypowy teren lub dużą inwestycję?{' '}
+        <a href={`tel:${business.phone.e164}`} class="font-semibold text-olive-700 underline underline-offset-2 hover:text-forest">Zadzwoń – doradzimy</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  @reference '../../styles/global.css';
+  .result-box {
+    @apply self-start rounded-2xl bg-mint/60 p-6 ring-1 ring-sage/50;
+  }
+  .error-msg {
+    @apply mt-3 text-sm font-semibold text-rose-700 empty:hidden;
+  }
+  /* Gdy jest błąd – przygaszamy (nieaktualny) wynik */
+  .result-box:has(.error-msg:not(:empty)) :is([data-out]) {
+    opacity: 0.35;
+  }
+</style>
+
+<script>
+  import '../../scripts/calculators';
+</script>
