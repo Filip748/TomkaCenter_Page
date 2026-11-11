@@ -1,0 +1,156 @@
+---
+/**
+ * Galeria: siatka „masonry” (CSS columns) + lekki lightbox na <dialog>
+ * (bez bibliotek). Bez JS linki otwierają po prostu duże zdjęcie.
+ */
+import { Picture, getImage } from 'astro:assets';
+import { gallery, GALLERY_INITIAL } from '../../data/gallery';
+
+// Duża wersja do lightboxa (bez powiększania małych oryginałów)
+const items = await Promise.all(
+  gallery.map(async (g) => ({
+    ...g,
+    large: await getImage({ src: g.image, width: Math.min(1600, g.image.width), format: 'webp', quality: 80 }),
+  })),
+);
+const extraCount = items.length - GALLERY_INITIAL;
+---
+
+<section id="galeria" class="section" aria-labelledby="galeria-title">
+  <div class="container-page">
+    <div class="max-w-2xl" data-reveal>
+      <span class="eyebrow">Galeria</span>
+      <h2 id="galeria-title" class="section-title">Zajrzyj do nas</h2>
+      <p class="section-lead">Kilka migawek z naszego centrum – od wiosennych wrzosów po świąteczny sklep.</p>
+    </div>
+
+    <ul id="gallery-grid" class="mt-10 columns-2 gap-3 sm:gap-4 md:columns-3 lg:columns-4">
+      {
+        items.map((item, i) => (
+          <li class="mb-3 break-inside-avoid sm:mb-4" data-extra={i >= GALLERY_INITIAL ? '' : undefined}>
+            <a
+              href={item.large.src}
+              data-lightbox={i}
+              data-alt={item.alt}
+              class="group block overflow-hidden rounded-2xl bg-sage-light shadow-soft"
+            >
+              <Picture
+                src={item.image}
+                formats={['avif', 'webp']}
+                widths={[320, 480]}
+                sizes="(min-width: 1024px) 270px, (min-width: 768px) 33vw, 50vw"
+                alt={item.alt}
+                loading="lazy"
+                class="w-full transition duration-500 group-hover:scale-105"
+              />
+              <span class="sr-only">(powiększ zdjęcie)</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {
+      extraCount > 0 && (
+        <div class="mt-8 text-center">
+          <button type="button" id="gallery-more" class="btn-secondary hidden" aria-controls="gallery-grid" aria-expanded="false">
+            Pokaż więcej zdjęć ({extraCount})
+          </button>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<dialog
+  id="lightbox"
+  aria-label="Podgląd zdjęcia"
+  class="m-auto max-h-none max-w-none bg-transparent p-0 backdrop:bg-forest/90 backdrop:backdrop-blur-sm"
+>
+  <figure class="relative flex h-dvh w-screen flex-col items-center justify-center p-4 sm:p-10">
+    <img id="lightbox-img" alt="" class="max-h-[80dvh] max-w-full rounded-2xl object-contain shadow-lift transition-opacity duration-200" />
+    <figcaption id="lightbox-caption" class="mt-4 max-w-2xl text-center text-cream"></figcaption>
+  </figure>
+  <button type="button" data-lb="close" class="lb-btn top-4 right-4" aria-label="Zamknij podgląd">✕</button>
+  <button type="button" data-lb="prev" class="lb-btn top-1/2 left-2 -translate-y-1/2 sm:left-6" aria-label="Poprzednie zdjęcie">‹</button>
+  <button type="button" data-lb="next" class="lb-btn top-1/2 right-2 -translate-y-1/2 sm:right-6" aria-label="Następne zdjęcie">›</button>
+</dialog>
+
+<style>
+  @reference '../../styles/global.css';
+  .lb-btn {
+    @apply fixed flex size-12 items-center justify-center rounded-full bg-cream/15 text-2xl text-cream transition hover:bg-cream/30;
+  }
+  /* Z JS ukrywamy nadmiarowe zdjęcia do czasu kliknięcia „Pokaż więcej” */
+  :global(.js) [data-extra]:not(.is-shown) {
+    display: none;
+  }
+</style>
+
+<script>
+  const grid = document.getElementById('gallery-grid')!;
+  const more = document.getElementById('gallery-more');
+  const dialog = document.getElementById('lightbox') as HTMLDialogElement;
+  const img = document.getElementById('lightbox-img') as HTMLImageElement;
+  const caption = document.getElementById('lightbox-caption')!;
+
+  /* ── „Pokaż więcej” ── */
+  if (more) {
+    more.classList.remove('hidden');
+    more.addEventListener('click', () => {
+      const extras = grid.querySelectorAll<HTMLElement>('[data-extra]');
+      extras.forEach((el) => el.classList.add('is-shown'));
+      more.setAttribute('aria-expanded', 'true');
+      more.hidden = true;
+      // Focus na pierwsze nowo pokazane zdjęcie (dostępność)
+      extras[0]?.querySelector('a')?.focus();
+    });
+  }
+
+  /* ── Lightbox ── */
+  const links = () => [...grid.querySelectorAll<HTMLAnchorElement>('a[data-lightbox]')].filter((a) => a.offsetParent !== null);
+  let index = 0;
+  let opener: HTMLElement | null = null;
+
+  function show(i: number) {
+    const list = links();
+    index = (i + list.length) % list.length;
+    const a = list[index];
+    // Ukrywamy stare zdjęcie do czasu załadowania nowego (podpis i obraz zawsze się zgadzają)
+    img.style.opacity = '0';
+    img.onload = () => (img.style.opacity = '1');
+    img.src = a.href;
+    img.alt = a.dataset.alt ?? '';
+    caption.textContent = `${a.dataset.alt ?? ''} (${index + 1}/${list.length})`;
+  }
+
+  grid.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-lightbox]');
+    if (!a || typeof dialog.showModal !== 'function') return;
+    e.preventDefault();
+    opener = a;
+    show(links().indexOf(a));
+    dialog.showModal();
+    document.documentElement.style.overflow = 'hidden';
+  });
+
+  dialog.addEventListener('click', (e) => {
+    const action = (e.target as HTMLElement).closest<HTMLElement>('[data-lb]')?.dataset.lb;
+    if (action === 'close') dialog.close();
+    else if (action === 'prev') show(index - 1);
+    else if (action === 'next') show(index + 1);
+    // klik w tło (poza zdjęciem) zamyka
+    else if (e.target === dialog || (e.target as HTMLElement).tagName === 'FIGURE') dialog.close();
+  });
+
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') show(index + 1);
+    if (e.key === 'ArrowLeft') show(index - 1);
+  });
+
+  // Escape obsługuje natywnie <dialog>; po zamknięciu oddajemy focus
+  dialog.addEventListener('close', () => {
+    document.documentElement.style.overflow = '';
+    opener?.focus();
+  });
+</script>

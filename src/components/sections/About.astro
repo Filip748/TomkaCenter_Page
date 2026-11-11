@@ -1,0 +1,79 @@
+---
+/** O nas – historia i wartości firmy (treść na podstawie starej strony). */
+import { Picture } from 'astro:assets';
+import { business } from '../../lib/business';
+import imgTables from '../../assets/images/gallery/6.jpg';
+import imgHeather from '../../assets/images/gallery/dscn0278.jpg';
+
+const values = [
+  {
+    title: `Od ${business.foundedYear} roku`,
+    text: 'Ponad trzy dekady doświadczenia w dostarczaniu roślin i artykułów ogrodniczych najwyższej jakości.',
+  },
+  {
+    title: 'Członek PSCO',
+    text: 'Należymy do Polskiego Stowarzyszenia Centrów Ogrodniczych.',
+  },
+  {
+    title: 'Sprawdzeni producenci',
+    text: 'Zdrowe, świeże rośliny od czołowych polskich szkółek i towary renomowanych firm z kraju i zagranicy.',
+  },
+  {
+    title: 'Rodzinny klimat',
+    text: 'Fachowa, miła obsługa – doradzimy, co posadzić, jak pielęgnować i czym chronić rośliny.',
+  },
+];
+---
+
+<section id="o-nas" class="section bg-cream-dark" aria-labelledby="o-nas-title">
+  <div class="container-page grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+    <!-- Kolaż dwóch zdjęć -->
+    <div class="relative order-last lg:order-first" data-reveal>
+      <Picture
+        src={imgTables}
+        formats={['avif', 'webp']}
+        widths={[480, 800]}
+        sizes="(min-width: 1024px) 480px, 85vw"
+        alt="Drewniane stoły z sadzonkami przed budynkiem centrum ogrodniczego TOMKA"
+        loading="lazy"
+        class="aspect-[4/3] w-[85%] rounded-[2rem] object-cover shadow-lift"
+      />
+      <Picture
+        src={imgHeather}
+        formats={['avif', 'webp']}
+        widths={[320, 560]}
+        sizes="(min-width: 1024px) 280px, 50vw"
+        alt="Kolorowe wrzosy w naszej szkółce"
+        loading="lazy"
+        class="absolute right-0 -bottom-8 aspect-square w-[50%] rounded-[1.5rem] border-[6px] border-cream-dark object-cover shadow-lift"
+      />
+    </div>
+
+    <div data-reveal>
+      <span class="eyebrow">O nas</span>
+      <h2 id="o-nas-title" class="section-title">Rodzinne centrum ogrodnicze z tradycjami</h2>
+      <div class="mt-5 space-y-4 text-lg text-muted">
+        <p>
+          {business.name} działa od {business.foundedYear} roku. Od początku naszą misją jest oferowanie towarów
+          najwyższej jakości w najlepszej cenie.
+        </p>
+        <p>
+          Prowadzimy sprzedaż kwalifikowanego materiału szkółkarskiego – drzew, krzewów ozdobnych i owocowych – oraz
+          artykułów do zakładania i pielęgnacji ogrodów i terenów zielonych. Współpracujemy też z firmami, które
+          projektują i urządzają ogrody.
+        </p>
+      </div>
+
+      <dl class="mt-8 grid gap-4 sm:grid-cols-2">
+        {
+          values.map((v) => (
+            <div class="rounded-2xl bg-white/80 p-5 shadow-soft">
+              <dt class="font-display text-lg font-semibold text-forest">{v.title}</dt>
+              <dd class="mt-1 text-sm text-muted">{v.text}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>
